@@ -265,14 +265,13 @@ final vssClientProvider = Provider((ref) {
   var config = ref.read(kuksaConfigProvider);
   debugPrint("Using ${config.hostname}:${config.port}");
   ChannelCredentials creds;
-  if (config.use_tls && config.ca_certificate.isNotEmpty) {
+  if (config.useTls && config.caCertificate.isNotEmpty) {
     print("Using TLS");
-    if (config.tls_server_name.isNotEmpty)
+    if (config.tlsServerName.isNotEmpty)
       creds = ChannelCredentials.secure(
-          certificates: config.ca_certificate,
-          authority: config.tls_server_name);
+          certificates: config.caCertificate, authority: config.tlsServerName);
     else
-      creds = ChannelCredentials.secure(certificates: config.ca_certificate);
+      creds = ChannelCredentials.secure(certificates: config.caCertificate);
   } else {
     creds = ChannelCredentials.insecure();
   }

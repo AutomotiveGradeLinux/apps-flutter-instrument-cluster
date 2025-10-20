@@ -2,17 +2,22 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yaml/yaml.dart';
+import 'package:toml/toml.dart';
 
 class KuksaConfig {
   final String hostname;
   final int port;
+  final String authorizationFile;
   final String authorization;
-  final bool use_tls;
-  final List<int> ca_certificate;
-  final String tls_server_name;
+  final bool useTls;
+  final String caCertificateFile;
+  final String readCaCertificateFile;
+  final List<int> caCertificate;
+  final String tlsServerName;
 
-  static String configFilePath = '/etc/xdg/AGL/cluster-dashboard.yaml';
+  static String globalConfigFilePath = '/etc/xdg/AGL/kuksa.toml';
+  static String appConfigFilePath =
+      '/etc/xdg/AGL/flutter-cluster-dashboard/kuksa.toml';
   static String defaultHostname = 'localhost';
   static int defaultPort = 55555;
   static String defaultCaCertPath = '/etc/kuksa-val/CA.pem';
@@ -20,42 +25,57 @@ class KuksaConfig {
   KuksaConfig(
       {required this.hostname,
       required this.port,
+      required this.authorizationFile,
       required this.authorization,
-      required this.use_tls,
-      required this.ca_certificate,
-      required this.tls_server_name});
+      required this.useTls,
+      required this.caCertificateFile,
+      required this.readCaCertificateFile,
+      required this.caCertificate,
+      required this.tlsServerName});
+
+  static KuksaConfig defaultConfig() {
+    return KuksaConfig(
+        hostname: KuksaConfig.defaultHostname,
+        port: KuksaConfig.defaultPort,
+        authorizationFile: "",
+        authorization: "",
+        useTls: false,
+        caCertificateFile: KuksaConfig.defaultCaCertPath,
+        readCaCertificateFile: "",
+        caCertificate: [],
+        tlsServerName: "");
+  }
 }
 
-// NOTE: This may need to be changed to a FutureProvider to avoid slowing
-//       down the top-level widget initState...
-
-final kuksaConfigProvider = Provider((ref) {
-  final configFile = File(KuksaConfig.configFilePath);
+KuksaConfig readKuksaConfig(String configFilePath, KuksaConfig defaultConfig) {
   try {
-    print("Reading configuration ${KuksaConfig.configFilePath}");
+    print("Reading KUKSA configuration ${configFilePath}");
+    final configFile = File(configFilePath);
     String content = configFile.readAsStringSync();
-    final dynamic yamlMap = loadYaml(content);
+    final configMap = TomlDocument.parse(content).toMap();
 
-    String hostname = KuksaConfig.defaultHostname;
-    if (yamlMap.containsKey('hostname')) {
-      hostname = yamlMap['hostname'];
+    String hostname = defaultConfig.hostname;
+    if (configMap.containsKey('hostname')) {
+      hostname = configMap['hostname'];
     }
 
-    int port = KuksaConfig.defaultPort;
-    if (yamlMap.containsKey('port')) {
-      port = yamlMap['port'];
+    int port = defaultConfig.port;
+    if (configMap.containsKey('port')) {
+      port = configMap['port'];
     }
 
-    String token = "";
-    if (yamlMap.containsKey('authorization')) {
-      String s = yamlMap['authorization'];
+    String tokenFile = defaultConfig.authorizationFile;
+    String token = defaultConfig.authorization;
+    if (configMap.containsKey('authorization')) {
+      String s = configMap['authorization'];
       if (s.isNotEmpty) {
         if (s.startsWith("/")) {
-          debugPrint("Reading authorization token $s");
+          tokenFile = s;
+          debugPrint("Reading authorization token $tokenFile");
           try {
-            token = File(s).readAsStringSync();
+            token = File(tokenFile).readAsStringSync();
           } on Exception catch (_) {
-            print("ERROR: Could not read authorization token file $token");
+            print("ERROR: Could not read authorization token file $tokenFile");
             token = "";
           }
         } else {
@@ -63,47 +83,79 @@ final kuksaConfigProvider = Provider((ref) {
         }
       }
     }
+    //debugPrint("authorization file = $tokenFile");
     //debugPrint("authorization = $token");
 
-    bool use_tls = false;
-    if (yamlMap.containsKey('use-tls')) {
-      var value = yamlMap['use-tls'];
-      if (value is bool) use_tls = value;
+    bool useTls = defaultConfig.useTls;
+    if (configMap.containsKey('use-tls')) {
+      var value = configMap['use-tls'];
+      if (value is bool) useTls = value;
     }
-    //debugPrint("Use TLS = $use_tls");
+    //debugPrint("Use TLS = $useTls");
 
-    List<int> ca_cert = [];
-    String ca_path = KuksaConfig.defaultCaCertPath;
-    if (yamlMap.containsKey('ca-certificate')) {
-      ca_path = yamlMap['ca-certificate'];
+    String caCertFile = defaultConfig.caCertificateFile;
+    String readCaCertFile = defaultConfig.readCaCertificateFile;
+    List<int> caCert = defaultConfig.caCertificate;
+    if (configMap.containsKey('ca-certificate')) {
+      caCertFile = configMap['ca-certificate'];
     }
-    try {
-      ca_cert = File(ca_path).readAsBytesSync();
-    } on Exception catch (_) {
-      print("ERROR: Could not read CA certificate file $ca_path");
-      ca_cert = [];
+    if (caCertFile.isNotEmpty && caCertFile != readCaCertFile) {
+      try {
+        caCert = File(caCertFile).readAsBytesSync();
+      } on Exception catch (_) {
+        print("ERROR: Could not read CA certificate file $caCertFile");
+        caCert = [];
+      }
+      readCaCertFile = caCertFile;
     }
-    //debugPrint("CA cert = $ca_cert");
+    //debugPrint("CA cert file = $caCertFile");
+    //debugPrint("CA cert = $caCert");
 
-    String tls_server_name = "";
-    if (yamlMap.containsKey('tls-server-name')) {
-      tls_server_name = yamlMap['tls-server-name'];
+    String tlsServerName = defaultConfig.tlsServerName;
+    if (configMap.containsKey('tls-server-name')) {
+      tlsServerName = configMap['tls-server-name'];
     }
 
     return KuksaConfig(
         hostname: hostname,
         port: port,
+        authorizationFile: tokenFile,
         authorization: token,
-        use_tls: use_tls,
-        ca_certificate: ca_cert,
-        tls_server_name: tls_server_name);
+        useTls: useTls,
+        caCertificateFile: caCertFile,
+        readCaCertificateFile: readCaCertFile,
+        caCertificate: caCert,
+        tlsServerName: tlsServerName);
   } on Exception catch (_) {
-    return KuksaConfig(
-        hostname: KuksaConfig.defaultHostname,
-        port: KuksaConfig.defaultPort,
-        authorization: "",
-        use_tls: false,
-        ca_certificate: [],
-        tls_server_name: "");
+    return defaultConfig;
+  }
+}
+
+// NOTE: This may need to be changed to a FutureProvider to avoid slowing
+//       down the top-level widget initState...
+
+final kuksaConfigProvider = Provider((ref) {
+  final KuksaConfig defaultConfig = KuksaConfig.defaultConfig();
+  try {
+    final Map<String, String> envVars = Platform.environment;
+    final configHome = envVars['XDG_CONFIG_HOME'];
+
+    // Read global configuration
+    var configFilePath = KuksaConfig.globalConfigFilePath;
+    if (configHome != null) {
+      configFilePath = configHome + "/AGL/kuksa.toml";
+    }
+    var config = defaultConfig;
+    config = readKuksaConfig(configFilePath, config);
+
+    // Read app-specific configuration
+    configFilePath = KuksaConfig.appConfigFilePath;
+    if (configHome != null) {
+      configFilePath = configHome + "/AGL/flutter-cluster-dashboard/kuksa.toml";
+    }
+    config = readKuksaConfig(configFilePath, config);
+    return config;
+  } on Exception catch (_) {
+    return defaultConfig;
   }
 });
