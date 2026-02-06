@@ -26,7 +26,7 @@ class DashboardVssClient extends VssClient {
     VSSPath.vehicleParkingLightOn,
     VSSPath.vehicleTrunkLocked,
     VSSPath.vehicleTrunkOpen,
-    VSSPath.vehicleMIL,
+    VSSPath.vehicleServiceDue,
     VSSPath.vehicleCruiseControlError,
     VSSPath.vehicleCruiseControlSpeedSet,
     VSSPath.vehicleCruiseControlActive,
@@ -143,8 +143,8 @@ class DashboardVssClient extends VssClient {
         }
         break;
       case VSSPath.vehicleTraveledDistance:
-        if (update.entry.value.hasFloat()) {
-          vehicleStatus.update(traveledDistance: update.entry.value.float);
+        if (update.entry.value.hasUint32()) {
+          vehicleStatus.update(traveledDistance: update.entry.value.uint32);
         }
         break;
       case VSSPath.vehicleTrunkLocked:
@@ -157,9 +157,9 @@ class DashboardVssClient extends VssClient {
           vehicleStatus.update(isTrunkOpen: update.entry.value.bool_12);
         }
         break;
-      case VSSPath.vehicleMIL:
+      case VSSPath.vehicleServiceDue:
         if (update.entry.value.hasBool_12()) {
-          vehicleStatus.update(isMILon: update.entry.value.bool_12);
+          vehicleStatus.update(isServiceDue: update.entry.value.bool_12);
         }
         break;
       case VSSPath.vehicleCruiseControlError:

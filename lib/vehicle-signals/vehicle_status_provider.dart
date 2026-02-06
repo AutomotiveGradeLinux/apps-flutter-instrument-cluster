@@ -25,7 +25,7 @@ class VehicleStatus {
     required this.cruiseControlSpeed,
     required this.isCruiseControlActive,
     required this.isCruiseControlError,
-    required this.isMILon,
+    required this.isServiceDue,
     required this.isTrunkLocked,
     required this.isTrunkOpen,
     required this.isBatteryCharging,
@@ -56,11 +56,11 @@ class VehicleStatus {
   final bool isHazardLightOn;
   final bool isTrunkOpen;
   final bool isTrunkLocked;
-  final bool isMILon;
+  final bool isServiceDue;
   final bool isCruiseControlActive;
   final bool isCruiseControlError;
   final bool isBatteryCharging;
-  final double traveledDistance;
+  final int traveledDistance;
   final DistanceUnit distanceUnit;
   final TemperatureUnit temperatureUnit;
 
@@ -88,11 +88,12 @@ class VehicleStatus {
     bool? isParkingOn,
     bool? isTrunkLocked,
     bool? isTrunkOpen,
-    bool? isMILon,
+    bool? isServiceDue,
     bool? isCruiseControlError,
     bool? isCruiseControlActive,
     bool? isBatteryCharging,
-    double? traveledDistance,
+    // NOTE: in meters
+    int? traveledDistance,
     double? cruiseControlSpeed,
     DistanceUnit? distanceUnit,
     TemperatureUnit? temperatureUnit,
@@ -123,7 +124,7 @@ class VehicleStatus {
       isTrunkLocked: isTrunkLocked ?? this.isTrunkLocked,
       isTrunkOpen: isTrunkOpen ?? this.isTrunkOpen,
       ambientAirTemp: ambientAirTemp ?? this.ambientAirTemp,
-      isMILon: isMILon ?? this.isMILon,
+      isServiceDue: isServiceDue ?? this.isServiceDue,
       isCruiseControlActive:
           isCruiseControlActive ?? this.isCruiseControlActive,
       cruiseControlSpeed: cruiseControlSpeed ?? this.cruiseControlSpeed,
@@ -163,12 +164,12 @@ class VehicleStatusNotifier extends StateNotifier<VehicleStatus> {
     isHighBeam: true,
     isLowBeam: false,
     isParkingOn: true,
-    traveledDistance: 888,
+    traveledDistance: 888000,
     ambientAirTemp: 25,
     cruiseControlSpeed: 60,
     isCruiseControlActive: false,
     isCruiseControlError: false,
-    isMILon: false,
+    isServiceDue: false,
     isTrunkLocked: true,
     isTrunkOpen: false,
     isBatteryCharging: true,
@@ -194,14 +195,14 @@ class VehicleStatusNotifier extends StateNotifier<VehicleStatus> {
     bool? isLowBeam,
     bool? isHighBeam,
     bool? isHazardLightOn,
-    bool? isMILon,
+    bool? isServiceDue,
     bool? isParkingOn,
     bool? isTrunkOpen,
     bool? isTrunkLocked,
     bool? isCruiseControlActive,
     bool? isCruiseControlError,
     bool? isBatteryCharging,
-    double? traveledDistance,
+    int? traveledDistance,
     double? cruiseControlSpeed,
     DistanceUnit? distanceUnit,
     TemperatureUnit? temperatureUnit,
@@ -229,7 +230,7 @@ class VehicleStatusNotifier extends StateNotifier<VehicleStatus> {
       isParkingOn: isParkingOn,
       isTrunkOpen: isTrunkOpen,
       isTrunkLocked: isTrunkLocked,
-      isMILon: isMILon,
+      isServiceDue: isServiceDue,
       ambientAirTemp: ambientAirTemp,
       isCruiseControlActive: isCruiseControlActive,
       isCruiseControlError: isCruiseControlError,

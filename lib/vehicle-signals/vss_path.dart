@@ -10,7 +10,7 @@ class VSSPath {
       "Vehicle.Powertrain.FuelSystem.RelativeLevel";
 
   static const String vehicleCoolantTemp =
-      "Vehicle.Powertrain.CombustionEngine.ECT";
+      "Vehicle.Powertrain.CombustionEngine.EngineCoolant.Temperature";
 
   static const String vehicleAmbientAirTemperature =
       "Vehicle.Exterior.AirTemperature";
@@ -45,7 +45,7 @@ class VSSPath {
   static const String vehiclePerformanceMode =
       "Vehicle.Powertrain.Transmission.PerformanceMode";
 
-  static const String vehicleMIL = "Vehicle.OBD.Status.IsMILOn";
+  static const String vehicleServiceDue = "Vehicle.Service.IsServiceDue";
 
   static const String vehicleCruiseControlError =
       "Vehicle.ADAS.CruiseControl.IsError";

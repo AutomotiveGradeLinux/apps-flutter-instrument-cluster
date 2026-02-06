@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -13,11 +14,12 @@ class LeftArc extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final double coolantTemp = ref.watch(vehicleStatusProvider.select((p) => p.coolantTemp));
+    final double maxTemp = 130;
+    final double coolantTemp = min(ref.watch(vehicleStatusProvider.select((p) => p.coolantTemp)), maxTemp);
     final animationController = useAnimationController(
       lowerBound: 0,
       upperBound: 100,
-    )..animateTo(coolantTemp,
+    )..animateTo((coolantTemp / maxTemp * 100),
         duration: const Duration(milliseconds: 1000));
 
     return AnimatedBuilder(

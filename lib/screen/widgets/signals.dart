@@ -19,7 +19,7 @@ class Signals extends ConsumerWidget {
     final bool isHazardLightOn = ref.watch(vehicleStatusProvider.select((p) => p.isHazardLightOn));
     final bool isParkingOn = ref.watch(vehicleStatusProvider.select((p) => p.isParkingOn));
     final bool isBatteryCharging = ref.watch(vehicleStatusProvider.select((p) => p.isBatteryCharging));
-    final bool isMILon = ref.watch(vehicleStatusProvider.select((p) => p.isMILon));
+    final bool isServiceDue = ref.watch(vehicleStatusProvider.select((p) => p.isServiceDue));
     final bool isSteeringLaneWarning = ref.watch(vehicleStatusProvider.select((p) => p.isSteeringLaneWarning));
     final bool isSteeringCruiseEnable = ref.watch(vehicleStatusProvider.select((p) => p.isSteeringCruiseEnable));
     final bool isSteeringCruiseSet = ref.watch(vehicleStatusProvider.select((p) => p.isSteeringCruiseSet));
@@ -47,15 +47,15 @@ class Signals extends ConsumerWidget {
             color: isBatteryCharging ? Colors.green : Colors.red,
             width: (20 * screenHeight) / 480),
         Image.asset("images/malfunction.png",
-            color: isMILon ? Colors.red : idleColor,
+            color: isServiceDue ? Colors.red : idleColor,
             width: (20 * screenHeight) / 480),
         //
         Image.asset("images/openDoor.png",
-            color: isMILon ? Colors.white : idleColor,
+            color: isServiceDue ? Colors.white : idleColor,
             width: (20 * screenHeight) / 480),
 
         Image.asset("images/seatBelt.png",
-            color: isMILon ? Colors.white : idleColor,
+            color: isServiceDue ? Colors.white : idleColor,
             width: (20 * screenHeight) / 480),
 
         //
